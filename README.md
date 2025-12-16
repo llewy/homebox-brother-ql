@@ -1,7 +1,7 @@
 # HomeBox + brother_ql_next Container Image
 
-[![Build and Push Docker Image](https://github.com/yourusername/homebox-brother-ql/actions/workflows/build-and-push.yml/badge.svg)](https://github.com/yourusername/homebox-brother-ql/actions/workflows/build-and-push.yml)
-[![Update Homebox Version](https://github.com/yourusername/homebox-brother-ql/actions/workflows/update-homebox-version.yml/badge.svg)](https://github.com/yourusername/homebox-brother-ql/actions/workflows/update-homebox-version.yml)
+[![Build and Push Docker Image](https://github.com/llewy/homebox-brother-ql/actions/workflows/build-and-push.yml/badge.svg)](https://github.com/llewy/homebox-brother-ql/actions/workflows/build-and-push.yml)
+[![Update Homebox Version](https://github.com/llewy/homebox-brother-ql/actions/workflows/update-homebox-version.yml/badge.svg)](https://github.com/llewy/homebox-brother-ql/actions/workflows/update-homebox-version.yml)
 
 This is a combined container image allowing you to use a Brother QL series label printer as the "print on server" printer for HomeBox.
 
@@ -16,7 +16,7 @@ This is a combined container image allowing you to use a Brother QL series label
 ## Usage
 The image is available as:
 ```
-ghcr.io/yourusername/homebox-brother-ql:latest
+ghcr.io/llewy/homebox-brother-ql:latest
 ```
 
 Minimal configuration example to work with a Brother QL-580N printer (assuming local DNS name `label-printer.home.arpa`) using endless 62mm tape over the network:
@@ -26,12 +26,12 @@ podman run -it --rm -p 7745:7745 \
   --env 'HBOX_LABEL_MAKER_HEIGHT=256' \
   --env 'HBOX_LABEL_MAKER_DYNAMIC_LENGTH=false' \
   --env 'HBOX_LABEL_MAKER_PRINT_COMMAND=brother_ql --backend network --model QL-580N --printer tcp://label-printer.home.arpa:9100 print --label 62 --rotate 0 {{.FileName}}' \
-  ghcr.io/yourusername/homebox-brother-ql:latest
+  ghcr.io/llewy/homebox-brother-ql:latest
 ```
 
 You can find the required pixel width/height for your specific labels by running:
 ```bash
-podman run --rm -it --entrypoint /usr/bin/env ghcr.io/yourusername/homebox-brother-ql:latest brother_ql info labels
+podman run --rm -it --entrypoint /usr/bin/env ghcr.io/llewy/homebox-brother-ql:latest brother_ql info labels
 ```
 Which will look like this:
 ```
@@ -74,7 +74,7 @@ You can use this image with [Podman Quadlet](https://docs.podman.io/en/latest/ma
 Description=HomeBox Inventory Management System
 
 [Container]
-Image=ghcr.io/yourusername/homebox-brother-ql:latest
+Image=ghcr.io/llewy/homebox-brother-ql:latest
 # Note: %h is replaced with the home directory of the user running the quadlet
 Volume=%h/homebox-data:/data
 PublishPort=7745:7745
@@ -95,7 +95,7 @@ You can use this image with [Compose](https://compose-spec.github.io/compose-spe
 ```yaml
 services:
   homebox:
-    image: "ghcr.io/yourusername/homebox-brother-ql:latest"
+    image: "ghcr.io/llewy/homebox-brother-ql:latest"
     container_name: "homebox"
     ports:
       - "7745:7745"

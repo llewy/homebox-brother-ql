@@ -1,0 +1,24 @@
+# Build artifacts
+*.log
+*.tmp
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local development
+.env
+.env.local
+
+# Test data
+homebox-data/
+test-data/
+
+# Docker
+.docker/

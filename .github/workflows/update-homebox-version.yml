@@ -1,0 +1,79 @@
+name: "Update Homebox Version"
+
+on:
+  schedule:
+    # Check for updates daily at 6:00 AM UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    
+jobs:
+  update-homebox:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Fetch the repository"
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: "Get latest Homebox version"
+        id: get_version
+        run: |
+          # Get latest release from GitHub API
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/sysadminsmedia/homebox/releases/latest | jq -r .tag_name | sed 's/^v//')
+          echo "Latest Homebox version: $LATEST_VERSION"
+          echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+          
+          # Get current version from Dockerfile (looking for main branch or version)
+          CURRENT_LINE=$(grep "ghcr.io/sysadminsmedia/homebox:" Dockerfile)
+          echo "Current Dockerfile line: $CURRENT_LINE"
+          
+          if echo "$CURRENT_LINE" | grep -q ":main"; then
+            echo "current_version=main" >> $GITHUB_OUTPUT
+            echo "Current version: main (development branch)"
+          else
+            CURRENT_VERSION=$(echo "$CURRENT_LINE" | grep -oP ':\K[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+            echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            echo "Current version: $CURRENT_VERSION"
+          fi
+          
+      - name: "Update Dockerfile if new version available"
+        id: update_dockerfile
+        run: |
+          if [ "${{ steps.get_version.outputs.current_version }}" = "main" ] || [ "${{ steps.get_version.outputs.version }}" != "${{ steps.get_version.outputs.current_version }}" ]; then
+            echo "Updating Dockerfile to use latest release version ${{ steps.get_version.outputs.version }}"
+            
+            # Update the Dockerfile to use the latest release version instead of main
+            sed -i "s|ghcr.io/sysadminsmedia/homebox:.*|ghcr.io/sysadminsmedia/homebox:${{ steps.get_version.outputs.version }} as homebox|" Dockerfile
+            
+            # Update the version label
+            sed -i "s|Version=\"[^\"]*\"|Version=\"${{ steps.get_version.outputs.version }}+brother-ql-0-11-4\"|" Dockerfile
+            
+            echo "updated=true" >> $GITHUB_OUTPUT
+          else
+            echo "No update needed. Current version ${{ steps.get_version.outputs.current_version }} is already the latest."
+            echo "updated=false" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: "Create Pull Request"
+        if: steps.update_dockerfile.outputs.updated == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update Homebox to v${{ steps.get_version.outputs.version }}"
+          title: "Update Homebox to v${{ steps.get_version.outputs.version }}"
+          body: |
+            🤖 **Automated update**
+            
+            This PR updates the Homebox version to `${{ steps.get_version.outputs.version }}`.
+            
+            **Changes:**
+            - Updated base Homebox image to `ghcr.io/sysadminsmedia/homebox:${{ steps.get_version.outputs.version }}`
+            - Updated version label in Dockerfile
+            
+            **Previous version:** ${{ steps.get_version.outputs.current_version }}
+            **New version:** ${{ steps.get_version.outputs.version }}
+            
+            **Release Notes:**
+            [View Homebox v${{ steps.get_version.outputs.version }} release notes](https://github.com/sysadminsmedia/homebox/releases/tag/v${{ steps.get_version.outputs.version }})
+          branch: update-homebox-${{ steps.get_version.outputs.version }}
+          delete-branch: true

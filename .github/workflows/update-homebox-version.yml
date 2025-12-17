@@ -9,6 +9,9 @@ on:
 jobs:
   update-homebox:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: "Fetch the repository"
         uses: actions/checkout@v4
@@ -77,3 +80,4 @@ jobs:
             [View Homebox v${{ steps.get_version.outputs.version }} release notes](https://github.com/sysadminsmedia/homebox/releases/tag/v${{ steps.get_version.outputs.version }})
           branch: update-homebox-${{ steps.get_version.outputs.version }}
           delete-branch: true
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>

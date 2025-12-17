@@ -7,7 +7,7 @@ WORKDIR /opt/brother_ql
 RUN git checkout af3e6c7648ee972c17cafbfe22d29e83d6458a2a # v0.11.4
 RUN rm -rf .git
 
-FROM ghcr.io/sysadminsmedia/homebox:v0.21.0 as homebox
+FROM ghcr.io/sysadminsmedia/homebox:0.21.0 as homebox
 
 FROM docker.io/python:3.13-alpine3.21
 
@@ -19,7 +19,7 @@ RUN apk add --no-cache wget ca-certificates
 COPY --from=homebox /app /app
 
 LABEL Name="homebox-brother-ql"
-LABEL Version="v0.21.0+brother-ql-0-11-4"
+LABEL Version="0.21.0+brother-ql-0-11-4"
 
 ENV HBOX_MODE=production
 ENV HBOX_STORAGE_CONN_STRING=file:///?no_tmp_dir=true
